@@ -1,0 +1,13 @@
+main {
+ 
+  s: int = mul v w;
+  print_grad s v;
+  print_grad s w;
+
+  c: int = const 4;
+  e: int = add v c;
+
+  a: int = div v e;
+  print_grad a v;
+  print v;
+}

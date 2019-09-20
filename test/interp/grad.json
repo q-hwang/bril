@@ -1,0 +1,71 @@
+{
+  "functions": [
+    {
+      "args": ["v", "w"],
+      "values": [2, 1],
+      "instrs": [
+        {
+          "args": [
+            "v",
+            "w"
+          ],
+          "dest": "s",
+          "op": "mul",
+          "type": "int"
+        },
+        {
+          "args": [
+            "s",
+            "v"
+          ],
+          "op": "print_grad"
+        },
+        {
+          "args": [
+            "s",
+            "w"
+          ],
+          "op": "print_grad"
+        },
+        {
+          "dest": "c",
+          "op": "const",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "args": [
+            "v",
+            "c"
+          ],
+          "dest": "e",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "v",
+            "e"
+          ],
+          "dest": "a",
+          "op": "div",
+          "type": "int"
+        },
+        {
+          "args": [
+            "a",
+            "v"
+          ],
+          "op": "print_grad"
+        },
+        {
+          "args": [
+            "v"
+          ],
+          "op": "print"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

@@ -10,13 +10,13 @@ export type Ident = string;
 /**
  * Value types.
  */
-export type Type = "int" | "bool";
+export type Type = "int" | "bool" ;
 
 /**
  * An instruction that does not produce any result.
  */
 export interface EffectOperation {
-  op: "br" | "jmp" | "print" | "ret";
+  op: "br" | "jmp" | "print" | "ret" | "print_grad";
   args: Ident[];
 }
 
@@ -27,7 +27,7 @@ export interface EffectOperation {
 export interface ValueOperation {
   op: "add" | "mul" | "sub" | "div" |
       "id" |
-      "eq" | "lt" | "gt" | "ge" | "le" | "not" | "and" | "or";
+      "eq" | "lt" | "gt" | "ge" | "le" | "not" | "and" | "or" ;
   args: Ident[];
   dest: Ident;
   type: Type;
@@ -91,6 +91,8 @@ export interface Label {
  */
 export interface Function {
   name: Ident;
+  args: Ident[];
+  values: number[];
   instrs: (Instruction | Label)[];
 }
 
