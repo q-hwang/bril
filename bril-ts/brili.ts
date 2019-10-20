@@ -212,6 +212,16 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
 
 function evalFunc(func: bril.Function) {
   let env: Env = new Map();
+  for (let i = 0; i < func.args.length; ++i) {
+    let v = func.values[i]
+    let value: Value;
+    if (typeof v === "number") {
+      value = BigInt(v);
+    } else {
+      value = v;
+    }
+    env.set(func.args[i], value);
+  }
   for (let i = 0; i < func.instrs.length; ++i) {
     let line = func.instrs[i];
     if ('op' in line) {

@@ -92,6 +92,8 @@ export interface Label {
 export interface Function {
   name: Ident;
   instrs: (Instruction | Label)[];
+  args: Ident[];
+  values: Value[];
 }
 
 /**
