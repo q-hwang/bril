@@ -141,7 +141,8 @@ def print_label(label):
 
 
 def print_func(func):
-    print('{} ({}) {{'.format(func['name'], ",".join(func.get('args', []))))
+    # print('{} ({}) {{'.format(func['name'], ",".join(func.get('args', []))))
+    print('{} {{'.format(func['name']))
     for instr_or_label in func['instrs']:
         if 'label' in instr_or_label:
             print_label(instr_or_label)
