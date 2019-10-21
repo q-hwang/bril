@@ -23,11 +23,31 @@ const argCounts:{[key in bril.OpCode]: number | null} = {
   print_grad: null,
 };
 
-type Env = Map<bril.Ident, [bril.Value, number[]| undefined]>;
+class RevADNode {
+  value: number;
+  gradValue: number | undefined = undefined;
+  children: [number, RevADNode][] = [];
+  constructor(value: number) {
+    this.value = value;
+  }
+  grad(): number {
+    if (!this.gradValue) {
+      this.gradValue = 0;
+      for (const val of this.children) {
+        const [num, node] = val;
+        this.gradValue += num * node.grad();
+      }
+    }
+    return this.gradValue!;
+  }
+}
+type Env = Map<bril.Ident, [bril.Value, number[]| undefined, RevADNode | undefined]>;
+let entry_vars: string[] = [];
 let var_grad: bril.Ident[] = []
 let num_grad: number = 0
 
-function apply(val1:[number,number[]], val2:[number, number[]], f:(x11:number,x12:number,x21:number,x22:number)=> number): number[] {
+type NumGrad = [number, number[], RevADNode];
+function apply(val1:NumGrad, val2:NumGrad, f:(x11:number,x12:number,x21:number,x22:number)=> number): number[] {
   let arr = new Array(num_grad)
   for(let i = 0; i < num_grad; i ++) {
     arr[i] = f(val1[0], val1[1][i], val2[0], val2[1][i])
@@ -53,12 +73,17 @@ function checkArgs(instr: bril.Operation, count: number) {
   }
 }
 
-function getInt(instr: bril.Operation, env: Env, index: number): [number, number[]] {
+function getInt(instr: bril.Operation, env: Env, index: number): [number, number[], RevADNode] {
   let val = get(env, instr.args[index]);
   if (typeof val[0] !== 'number' || typeof val[1] === 'undefined') {
     throw `${instr.op} argument ${index} must be a number`;
   }
-  return [val[0], val[1]];
+  // console.log("80: ", instr.args[index]);
+  if (!val[2]) {
+    return [val[0], val[1], new RevADNode(val[0])];
+  } else {
+    return [val[0], val[1], val[2]!];
+  }
 }
 
 function getBool(instr: bril.Operation, env: Env, index: number) {
@@ -87,7 +112,7 @@ let END: Action = {"end": true};
  * instruction or "end" to terminate the function.
  */
 function evalInstr(instr: bril.Instruction, env: Env): Action {
-  // console.log(env);
+  // console.log("110: ", env);
   // Check that we have the right number of arguments.
   if (instr.op !== "const") {
     let count = argCounts[instr.op];
@@ -100,7 +125,7 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
 
   switch (instr.op) {
   case "const":
-    env.set(instr.dest, [instr.value, new Array(num_grad).fill(0)]);
+    env.set(instr.dest, [instr.value, new Array(num_grad).fill(0), undefined]);
     return NEXT;
 
   case "id": {
@@ -112,76 +137,89 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
   case "add": {
     let x1 = getInt(instr, env, 0);
     let x2 = getInt(instr, env, 1);
-    env.set(instr.dest, [x1[0] + x2[0], apply(x1,x2, (x11,x12,x21,x22) =>  x12 + x22)]);
+    let newADNode = new RevADNode(x1[0] + x2[0]);
+    x1[2].children.push([1.0, newADNode]);
+    x2[2].children.push([1.0, newADNode]);
+    env.set(instr.dest, [x1[0] + x2[0], apply(x1,x2, (x11,x12,x21,x22) =>  x12 + x22), newADNode]);
     return NEXT;
   }
 
   case "mul": {
     let x1 = getInt(instr, env, 0);
     let x2 = getInt(instr, env, 1);
-    env.set(instr.dest, [x1[0] * x2[0], apply(x1,x2, (x11,x12,x21,x22) =>  x12 *x21 + x11 *x22)]);
+    let newADNode = new RevADNode(x1[0] * x2[0]);
+    // console.log("146: ", x1, x2);
+    x1[2].children.push([x2[0], newADNode]);
+    x2[2].children.push([x1[0], newADNode]);
+    env.set(instr.dest, [x1[0] * x2[0], apply(x1,x2, (x11,x12,x21,x22) =>  x12 *x21 + x11 *x22), newADNode]);
     return NEXT;
   }
 
   case "sub": {
     let x1 = getInt(instr, env, 0);
     let x2 = getInt(instr, env, 1);
-    env.set(instr.dest, [x1[0] - x2[0],  apply(x1,x2, (x11,x12,x21,x22) =>  x12 - x22)]);
+    let newADNode = new RevADNode(x1[0] - x2[0]);
+    x1[2].children.push([-1.0, newADNode]);
+    x2[2].children.push([-1.0, newADNode]);
+    env.set(instr.dest, [x1[0] - x2[0],  apply(x1,x2, (x11,x12,x21,x22) =>  x12 - x22), newADNode]);
     return NEXT;
   }
 
   case "div": {
     let x1 = getInt(instr, env, 0);
     let x2 = getInt(instr, env, 1);
-    env.set(instr.dest, [x1[0] / x2[0], apply(x1,x2, (x11,x12,x21,x22) =>  (x12 *x21 - x11 *x22)/ x21**2)]);
+    let newADNode = new RevADNode(x1[0] / x2[0]);
+    x1[2].children.push([1.0/x2[0], newADNode]);
+    x2[2].children.push([-x1[0]/(x2[0]*x2[0]), newADNode]);
+    env.set(instr.dest, [x1[0] / x2[0], apply(x1,x2, (x11,x12,x21,x22) =>  (x12 *x21 - x11 *x22)/ x21**2), newADNode]);
     return NEXT;
   }
 
   case "le": {
     let val = getInt(instr, env, 0)[0] <= getInt(instr, env, 1)[0];
-    env.set(instr.dest, [val, undefined]);
+    env.set(instr.dest, [val, undefined, undefined]);
     return NEXT;
   }
 
   case "lt": {
     let val = getInt(instr, env, 0)[0] < getInt(instr, env, 1)[0];
-    env.set(instr.dest, [val, undefined]);
+    env.set(instr.dest, [val, undefined, undefined]);
     return NEXT;
   }
 
   case "gt": {
     let val = getInt(instr, env, 0)[0] > getInt(instr, env, 1)[0];
-    env.set(instr.dest,[val, undefined]);
+    env.set(instr.dest,[val, undefined, undefined]);
     return NEXT;
   }
 
   case "ge": {
     let val = getInt(instr, env, 0)[0] >= getInt(instr, env, 1)[0];
-    env.set(instr.dest, [val, undefined]);
+    env.set(instr.dest, [val, undefined, undefined]);
     return NEXT;
   }
 
   case "eq": {
     let val = getInt(instr, env, 0)[0] === getInt(instr, env, 1)[0];
-    env.set(instr.dest,[val, undefined]);
+    env.set(instr.dest,[val, undefined, undefined]);
     return NEXT;
   }
 
   case "not": {
     let val = !getBool(instr, env, 0);
-    env.set(instr.dest, [val, undefined]);
+    env.set(instr.dest, [val, undefined, undefined]);
     return NEXT;
   }
 
   case "and": {
     let val = getBool(instr, env, 0) && getBool(instr, env, 1);
-    env.set(instr.dest, [val, undefined]);
+    env.set(instr.dest, [val, undefined, undefined]);
     return NEXT;
   }
 
   case "or": {
     let val = getBool(instr, env, 0) || getBool(instr, env, 1);
-    env.set(instr.dest, [val, undefined]);
+    env.set(instr.dest, [val, undefined, undefined]);
     return NEXT;
   }
 
@@ -195,9 +233,21 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
     if(instr.args.length < 1) {
       throw "no target var for differentiation";
     }
-    let target = getInt(instr, env, 0)[1]
-    let values = instr.args.slice(1).map(i => target[var_grad.indexOf(i)]);
+    // let target = getInt(instr, env, 0)[1]
+    // let values = instr.args.slice(1).map(i => target[var_grad.indexOf(i)]);
+    // // console.log(env);
+    // console.log(...values);
+
+    let target = getInt(instr, env, 0)[2]
+    target.gradValue = 1.0;
+    let values = [];
+    for (let i=0; i<entry_vars.length; i++) {
+      const vals = get(env, entry_vars[i]);
+      values.push(vals[2]!.grad());
+    }
+    // console.log(env);
     console.log(...values);
+
     return NEXT;
   }
 
@@ -213,7 +263,7 @@ function evalInstr(instr: bril.Instruction, env: Env): Action {
       return {"label": instr.args[2]};
     }
   }
-  
+
   case "ret": {
     return END;
   }
@@ -229,7 +279,8 @@ function evalFunc(func: bril.Function) {
   for (let i = 0; i < func.args.length; ++i) {
     let arr = new Array(num_grad).fill(0);
     arr[i] = 1
-    env.set(func.args[i], [func.values[i], arr]);
+    env.set(func.args[i], [func.values[i], arr, new RevADNode(func.values[i])]);
+    entry_vars.push(func.args[i]);
   }
   for (let i = 0; i < func.instrs.length; ++i) {
     let line = func.instrs[i];

@@ -1,0 +1,120 @@
+{
+  "functions": [
+    {
+      "name": "main",
+      "instrs": [
+        {
+          "op": "const",
+          "value": 5,
+          "dest": "v0",
+          "type": "int"
+        },
+        {
+          "op": "id",
+          "args": [
+            "v0"
+          ],
+          "dest": "value",
+          "type": "int"
+        },
+        {
+          "op": "id",
+          "args": [
+            "value"
+          ],
+          "dest": "v2",
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "value": 3,
+          "dest": "v3",
+          "type": "int"
+        },
+        {
+          "op": "add",
+          "args": [
+            "v2",
+            "v3"
+          ],
+          "dest": "v4",
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "value": 6,
+          "dest": "v5",
+          "type": "int"
+        },
+        {
+          "op": "lt",
+          "args": [
+            "v4",
+            "v5"
+          ],
+          "dest": "v6",
+          "type": "bool"
+        },
+        {
+          "op": "br",
+          "args": [
+            "v6",
+            "then.1",
+            "else.1"
+          ]
+        },
+        {
+          "label": "then.1"
+        },
+        {
+          "op": "const",
+          "value": 1,
+          "dest": "v7",
+          "type": "int"
+        },
+        {
+          "op": "print",
+          "args": [
+            "v7"
+          ]
+        },
+        {
+          "op": "const",
+          "value": 0,
+          "dest": "v8",
+          "type": "int"
+        },
+        {
+          "op": "jmp",
+          "args": [
+            "endif"
+          ]
+        },
+        {
+          "label": "else.1"
+        },
+        {
+          "op": "const",
+          "value": 2,
+          "dest": "v9",
+          "type": "int"
+        },
+        {
+          "op": "print",
+          "args": [
+            "v9"
+          ]
+        },
+        {
+          "op": "const",
+          "value": 0,
+          "dest": "v10",
+          "type": "int"
+        },
+        {
+          "label": "endif.1"
+        }
+      ]
+    }
+  ]
+}

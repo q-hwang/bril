@@ -1,0 +1,122 @@
+{
+  "functions": [
+    {
+      "args": [
+        "x",
+        "m"
+      ],
+      "instrs": [
+        {
+          "args": [
+            "x"
+          ],
+          "dest": "v0",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "m"
+          ],
+          "dest": "v1",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "v0",
+            "v1"
+          ],
+          "dest": "v2",
+          "op": "sub",
+          "type": "int"
+        },
+        {
+          "args": [
+            "v2"
+          ],
+          "dest": "a",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "dest": "v3",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "dest": "v4",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "args": [
+            "v3",
+            "v4"
+          ],
+          "dest": "v5",
+          "op": "sub",
+          "type": "int"
+        },
+        {
+          "args": [
+            "v5"
+          ],
+          "dest": "b",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "b"
+          ],
+          "dest": "v6",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "dest": "v7",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "v6",
+            "v7"
+          ],
+          "dest": "v8",
+          "op": "mul",
+          "type": "int"
+        },
+        {
+          "args": [
+            "v8"
+          ],
+          "dest": "y",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "y",
+            "x",
+            "m"
+          ],
+          "op": "print_grad"
+        }
+      ],
+      "name": "main",
+      "values": [
+        0.6999999999999992,
+        -0.29999999999999954
+      ]
+    }
+  ]
+}
