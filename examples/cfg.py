@@ -52,7 +52,7 @@ def add_terminators(blocks):
     to all blocks (avoiding "fall-through" control flow transfers).
     """
     for i, block in enumerate(blocks.values()):
-        if block[-1]['op'] not in TERMINATORS:
+        if len(block) == 0 or block[-1]['op'] not in TERMINATORS:
             if i == len(blocks) - 1:
                 # In the last block, return.
                 block.append({'op': 'ret', 'args': []})

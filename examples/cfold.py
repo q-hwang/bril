@@ -4,7 +4,8 @@ from df import df_worklist, ANALYSES, fmt, interp
 from form_blocks import form_blocks
 import cfg
 
-def cfold(blocks, out, in_):
+def cfold(blocks):
+    in_, out = df_worklist(blocks, ANALYSES['cprop'])
     # overwirte blocks
     for index, block in blocks.items():
         vals = in_[index]
@@ -25,12 +26,13 @@ if __name__ == '__main__':
         blocks = cfg.block_map(form_blocks(func['instrs']))
         cfg.add_terminators(blocks)
 
-        in_, out = df_worklist(blocks, ANALYSES['cprop'])
+       
         for block in blocks:
             print('{}:'.format(block))
             print('{}:'.format(blocks[block]))
-            print('  in: ', fmt(in_[block]))
-            print('  out:', fmt(out[block]))
 
-
-        cfold(blocks, out, in_)
+        cfold(blocks)
+        print("================after==================")
+        for block in blocks:
+            print('{}:'.format(block))
+            print('{}:'.format(blocks[block]))
