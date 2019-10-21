@@ -153,6 +153,34 @@ def cprop_merge(vals_list):
     return out_vals
 
 
+def copy_merge(vals_list):
+    out_vals = None
+    for vals in vals_list:
+        if out_vals is None:
+            out_vals = dict(vals)
+            continue
+        for name, val in out_vals.items(): 
+            if not (name in vals and vals[name] == val):
+                del out_vals[name] 
+            
+    if out_vals is None:
+        out_vals = {}
+    return out_vals
+
+def copy_transfer(block, in_vals):
+    out_vals = dict(in_vals)
+    for instr in block:
+        if 'dest' in instr:
+            for k,v in out_vals.items():
+                if instr['dest'] == k or instr['dest'] == v:
+                    del out_vals[k] 
+            
+            if instr['op'] == 'id':
+                out_vals[instr['dest']] = instr['args'][0]
+              
+    return out_vals
+
+
 ANALYSES = {
     # A really really basic analysis that just accumulates all the
     # currently-defined variables.
@@ -178,6 +206,13 @@ ANALYSES = {
         init={},
         merge=cprop_merge,
         transfer=cprop_transfer,
+    ),
+
+    'copy': Analysis(
+        True,
+        init={},
+        merge=copy_merge,
+        transfer=copy_transfer,
     ),
 }
 

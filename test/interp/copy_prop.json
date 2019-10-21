@@ -1,0 +1,49 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "args": [
+            "c"
+          ],
+          "dest": "a",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "args": [
+            "somewhere"
+          ],
+          "op": "jmp"
+        },
+        {
+          "args": [
+            "c"
+          ],
+          "dest": "a",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "label": "somewhere"
+        },
+        {
+          "dest": "e",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "args": [
+            "a",
+            "e"
+          ],
+          "dest": "b",
+          "op": "add",
+          "type": "int"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

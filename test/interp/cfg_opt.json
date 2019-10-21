@@ -1,0 +1,114 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "args": [
+            "c"
+          ],
+          "dest": "a",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "dest": "v",
+          "op": "const",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "args": [
+            "somewhere"
+          ],
+          "op": "jmp"
+        },
+        {
+          "args": [
+            "b"
+          ],
+          "dest": "a",
+          "op": "id",
+          "type": "int"
+        },
+        {
+          "dest": "v",
+          "op": "const",
+          "type": "int",
+          "value": 3
+        },
+        {
+          "label": "somewhere"
+        },
+        {
+          "dest": "b",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "args": [
+            "v",
+            "b"
+          ],
+          "dest": "a",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "dest": "c",
+          "op": "const",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "args": [
+            "c",
+            "here",
+            "there"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "here"
+        },
+        {
+          "args": [
+            "b"
+          ],
+          "op": "print"
+        },
+        {
+          "args": [
+            "done"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "there"
+        },
+        {
+          "args": [
+            "c"
+          ],
+          "op": "print"
+        },
+        {
+          "args": [
+            "done"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "done"
+        },
+        {
+          "args": [
+            "v"
+          ],
+          "op": "print"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

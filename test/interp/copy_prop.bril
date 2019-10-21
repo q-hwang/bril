@@ -1,0 +1,8 @@
+main {
+  a: int = id c;
+  jmp somewhere;
+  a: int = id c;
+somewhere:
+  e: int = const 1;
+  b: int = add a e;
+}

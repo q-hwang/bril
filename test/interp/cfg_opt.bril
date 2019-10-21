@@ -1,0 +1,20 @@
+main {
+  a: int = id c;
+  v: int = const 4;
+  jmp somewhere;
+  a: int = id b;
+  v: int = const 3;
+somewhere:
+  b: int = const 2;
+  a: int = add v b;
+  c: bool = const false;
+  br c here there;
+here:
+  print b;
+  jmp done;
+there:
+  print c;
+  jmp done;
+done:
+  print v;
+}
