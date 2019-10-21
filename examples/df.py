@@ -69,13 +69,13 @@ def fmt(val):
         if val:
             return ', '.join(v for v in sorted(val))
         else:
-            return '∅'
+            return 'empty'
     elif isinstance(val, dict):
         if val:
             return ', '.join('{}: {}'.format(k, v)
                              for k, v in sorted(val.items()))
         else:
-            return '∅'
+            return 'empty'
     else:
         return str(val)
 
@@ -110,6 +110,20 @@ def use(block):
             defined.add(i['dest'])
     return used
 
+interp = {
+        "add": lambda args: args[0] + args[1],
+        "mul": lambda args: args[0] * args[1],
+        "sub": lambda args: args[0] - args[1],
+        "div": lambda args: args[0] / args[1],
+        "eq": lambda args: args[0] == args[1],
+        "lt": lambda args: args[0] < args[1],
+        "gt": lambda args: args[0] > args[1],
+        "ge": lambda args: args[0] >= args[1],
+        "le": lambda args: args[0] <= args[1],
+        "not": lambda args: not args[0],
+        "and": lambda args: args[0] and args[1],
+        "or": lambda args: args[0] or args[1],
+    }
 
 def cprop_transfer(block, in_vals):
     out_vals = dict(in_vals)
@@ -117,6 +131,8 @@ def cprop_transfer(block, in_vals):
         if 'dest' in instr:
             if instr['op'] == 'const':
                 out_vals[instr['dest']] = instr['value']
+            elif instr['op'] in interp and all(out_vals.get(arg, '?') != '?' for arg in instr['args']):
+                out_vals[instr['dest']] = interp[instr['op']](list(map(lambda arg: out_vals[arg], instr['args'])))
             else:
                 out_vals[instr['dest']] = '?'
     return out_vals
